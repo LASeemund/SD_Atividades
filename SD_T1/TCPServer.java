@@ -115,7 +115,6 @@ class ClientThread extends Thread {
                     //String line = fileReader.readLine();
                     reader = new BufferedReader(new FileReader(packageName + "/users/" + userName + ".txt" ));
                     String line = reader.readLine();
-                    System.out.println("leu o arquivo: " + line);
                     reader.close();
 
                     if(!(key.get(2).replace(" ", "").equals(line.toString()))){ /* usuario errou a senha, desconectando user */
