@@ -156,29 +156,33 @@ class ClientThread extends Thread {
             /* loop pimario */
             while (loop) {
                 buffer = in.readUTF();   /* aguarda o envio de dados */
-
+                List<String> bufferData = Arrays.asList(buffer.split(" "));
                 if(buffer == "PWD"){
                     /* Devolve o caminho corrente (PATH) usando String UTF separando os diretórios por barra(/). */
                     out.writeUTF(this._path.getPath());
                     System.out.println("User: " + userName + " is at " + this._path.getPath());
                 }
-                else if(buffer.equals("CHDIR")){
-                    /* Acessa o diretório que o usuário digitar apos o comando CHDIR */
-                    out.writeUTF("ENTERDIR");
-                    buffer = in.readUTF();  /* aguarda o envio do diretório */
-                    File directoryCHDIR = new File(this._path.getPath() + buffer); 
-                    if(directoryCHDIR.exists()){ 
-                        currentDir = currentDir + this._path.getPath() + buffer + "/";
-                        Paths.get(buffer).toAbsolutePath().normalize(); /* normaliza o caminho */
-                        System.out.println("User: " + userName + " is at " + currentDir);
-                        out.writeUTF("SUCCESS");
+                else if(bufferData.get(0).equals("CHDIR")){
+                    /* Acessa o diretório que o usuário digitar junto com o comando CHDIR */
+                    if(bufferData.size() < 2){
+                        System.out.println("Error: Null Directory.");
+                        out.writeUTF("ERROR NULL DIRECTORY");
                     }
                     else{
-                        System.out.println("Error: Directory " + directoryCHDIR + " not found.");
-                        out.writeUTF("ERROR");
+                        File directoryCHDIR = new File(this._path.getPath() + bufferData.get(1)); 
+                        if(directoryCHDIR.exists()){ 
+                            currentDir = currentDir + this._path.getPath() + bufferData.get(1) + "/";
+                            Paths.get(buffer).toAbsolutePath().normalize(); /* normaliza o caminho */
+                            System.out.println("User: " + userName + " is at " + currentDir);
+                            out.writeUTF("SUCCESS");
+                        }
+                        else{
+                            System.out.println("Error: Directory " + directoryCHDIR + " not found.");
+                            out.writeUTF("ERROR");
+                        }
                     }
                 }
-                else if(buffer.equals("GETFILES")){
+                else if(bufferData.get(0).equals("GETFILES")){
                     File directoryfiles = new File(currentDir); 
                     /* lista os arquivos do diretório corrente */
                     if(directoryfiles.isDirectory()){
