@@ -164,8 +164,21 @@ class ClientThread extends Thread {
                 else if(buffer == "CHDIR"){
                     
                 }
-                else if(buffer == "GETFILES"){
-                    
+                else if(buffer.equals("GETFILES")){
+                    File directoryfiles = new File(packageName); 
+                    /* lista os arquivos do diretório corrente */
+                    if(directoryfiles.isDirectory()){
+                        Number count = directoryfiles.listFiles().length;
+                        File[] files = directoryfiles.listFiles();
+                        System.out.println("Number of files: " + count);
+                        for(File file : files) {
+                            System.out.println(file.getName());
+                        }
+                        out.writeUTF("SUCCESS");
+                    }
+                    else{
+                        out.writeUTF("ERROR");
+                    }
                 }
                 else if(buffer == "GETDIRS"){
                     

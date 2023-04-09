@@ -91,6 +91,11 @@ public class TCPClient {
 					break;
 
 				buffer = in.readUTF(); // aguarda resposta do servidor
+
+				if (buffer.equals("SUCCESS")) {
+					System.out.println("Logado");
+				}
+
 				System.out.println("Server disse: " + buffer);
 			}
 		} catch (UnknownHostException ue) {
