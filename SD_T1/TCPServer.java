@@ -68,6 +68,7 @@ class ClientThread extends Thread {
     Path _path;
     FileInputStream fis = null;
 	String packageName = "SD_T1";
+    String currentDir = packageName;
 
     public ClientThread(Socket clientSocket) {
         try {
@@ -167,8 +168,9 @@ class ClientThread extends Thread {
                     buffer = in.readUTF();  /* aguarda o envio do diretório */
                     File directoryCHDIR = new File(this._path.getPath() + buffer); 
                     if(directoryCHDIR.exists()){ 
+                        currentDir = currentDir + this._path.getPath() + buffer + "/";
                         Paths.get(buffer).toAbsolutePath().normalize(); /* normaliza o caminho */
-                        System.out.println("User: " + userName + " is at " + this._path.getPath() + buffer + "/");
+                        System.out.println("User: " + userName + " is at " + currentDir);
                         out.writeUTF("SUCCESS");
                     }
                     else{
@@ -177,7 +179,7 @@ class ClientThread extends Thread {
                     }
                 }
                 else if(buffer.equals("GETFILES")){
-                    File directoryfiles = new File(packageName); 
+                    File directoryfiles = new File(currentDir); 
                     /* lista os arquivos do diretório corrente */
                     if(directoryfiles.isDirectory()){
                         Number count = directoryfiles.listFiles().length;
