@@ -81,8 +81,9 @@ public class TCPClient {
 			}
 
 			/* protocolo de comunicação */
+			String prefix = "Mensagem:";
 			while (loop) {
-				System.out.print("Mensagem: ");
+				System.out.print(prefix + " ");
 				buffer = reader.nextLine(); // lê mensagem via teclado
 
 				out.writeUTF(buffer); // envia a mensagem para o servidor
@@ -92,11 +93,14 @@ public class TCPClient {
 
 				buffer = in.readUTF(); // aguarda resposta do servidor
 
-				if (buffer.equals("SUCCESS")) {
-					System.out.println("Logado");
+				if (buffer.equals("ENTERDIR")) {
+					System.out.println("Enter the directory name: ");
+					prefix = ">";
 				}
-
-				System.out.println("Server disse: " + buffer);
+				else{
+					prefix = "Mensagem:";
+					System.out.println("Server disse: " + buffer);
+				}
 			}
 		} catch (UnknownHostException ue) {
 			System.out.println("Socket:" + ue.getMessage());
