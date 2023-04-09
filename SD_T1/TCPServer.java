@@ -190,7 +190,7 @@ class ClientThread extends Thread {
                     /* Acessa o diretório que o usuário digitar apos o comando CHDIR */
                     out.writeUTF("ENTERDIR");
                     buffer = in.readUTF();  /* aguarda o envio do diretório */
-                    File directoryCHDIR = new File(this._path.getPath() + buffer); 
+                    File directoryCHDIR = new File(this._path.getRootPath() + buffer); 
                     if(directoryCHDIR.exists()){ 
                         Paths.get(buffer).toAbsolutePath().normalize(); /* normaliza o caminho */
                         System.out.println("User: " + userName + " is at " + this._path.getPath() + buffer + "/");
@@ -204,8 +204,24 @@ class ClientThread extends Thread {
                 else if(buffer == "GETFILES"){
                     
                 }
-                else if(buffer == "GETDIRS"){
-                    
+                else if(buffer.replace(" ","").equals("GETDIRS")){
+                    File directoryGETDIRS = new File(this._path.getRootPath());
+                    String listBuffer = "";
+                    System.out.println(directoryGETDIRS.list().length);
+                    //System.out.println(Arrays.toString(list.toArray(directoryGETDIRS.list())));
+                    if(directoryGETDIRS.list().length > 0){
+                        //System.out.println(directoryGETDIRS.list());
+                        for (String pathname : directoryGETDIRS.list()) {
+                            listBuffer = listBuffer + "\n" + pathname;
+                        }
+                        listBuffer = listBuffer + "\n";
+                        System.out.println(listBuffer);
+                    }
+                    else{
+                        System.out.println("nao tem arquivos");
+                        listBuffer = "não tem arquivos no diretorio\n";
+                    }
+                    out.writeUTF(directoryGETDIRS.list().length + listBuffer);
                 }
                 else if(buffer == "EXIT"){
                     System.out.println("User: " + userName + " disconect.");
