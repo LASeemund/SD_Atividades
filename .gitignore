@@ -1,0 +1,6 @@
+# users
+/users
+*.txt
+
+# class
+*.class
