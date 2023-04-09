@@ -42,17 +42,42 @@ public class TCPServer {
 
 
 class Path {
-	String _path;
+	private String _path;
+    private String _root;
+    
 	public Path(String str){
-		//this.path = new String(str);
+        this._root = "SD_T1/root";
 		this._path = (str);
+        File path = new File(this._root);
+        if(!path.exists()){
+            path.mkdir();
+        }
     }
 	public void addPath(String str){
-		//this.path = new String(this.path + str);
-		this._path = (this._path + str);
+        if(str.equals("..")){
+            for (int i = this._path.length()-2; i > 0; i = i-1) {
+                if(this._path.charAt(i) == ('\\')){
+                    this._path = this._path.substring(0,i);
+                    break;
+                }
+            }
+            for (int i = this._root.length()-2; i > 0; i = i-1) {
+                if(this._root.charAt(i) == ('\\')){
+                    this._root = this._root.substring(0,i);
+                    break;
+                }
+            }
+        }
+        else{
+            this._path = (this._path + str + "/");
+            this._root = (this._root + str);
+        }
 	}
 	public String getPath(){
 		return this._path;
+	}
+    public String getRootPath(){
+		return this._root;
 	}
 }
 
