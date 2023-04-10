@@ -72,7 +72,7 @@ public class TCPClient {
 
 			buffer = in.readUTF();
 			if (buffer.equals("ERROR")) {
-				System.out.print("ERROR: senha errada");
+				System.out.println("ERROR: senha errada");
 			}
 			boolean loop = false;
 			if (buffer.equals("SUCCESS")) {
