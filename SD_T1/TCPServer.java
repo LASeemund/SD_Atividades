@@ -182,7 +182,7 @@ class ClientThread extends Thread {
             while (loop) {
                 buffer = in.readUTF();   /* aguarda o envio de dados */
                 List<String> bufferData = Arrays.asList(buffer.split(" "));
-                if(buffer == "PWD"){
+                if(buffer.replace(" ","").equals("PWD")){
                     /* Devolve o caminho corrente (PATH) usando String UTF separando os diretórios por barra(/). */
                     out.writeUTF(this._path.getPath());
                     System.out.println("User: " + userName + " is at " + this._path.getPath());
