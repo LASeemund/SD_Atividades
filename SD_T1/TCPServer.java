@@ -211,9 +211,16 @@ class ClientThread extends Thread {
                     File directoryfiles = new File(currentDir); 
                     /* lista os arquivos do diretório corrente */
                     if(directoryfiles.isDirectory()){
-                        Number count = directoryfiles.listFiles().length;
-                        File[] files = directoryfiles.listFiles();
-                        System.out.println("Number of files: " + count);
+                        /* lista somente os arquivos do diretório corrente */
+                        File[] files = directoryfiles.listFiles(
+                            new FileFilter() {
+                                @Override
+                                public boolean accept(File file) {
+                                    return file.isFile();
+                                }
+                            }
+                        );
+                        System.out.println("Number of files: " + files.length);
                         for(File file : files) {
                             System.out.println(file.getName());
                         }
@@ -243,11 +250,11 @@ class ClientThread extends Thread {
                     }
                     out.writeUTF(directoryGETDIRS.list().length + listBuffer);
                 }
-                else if(buffer == "EXIT"){
+                else if(buffer.replace(" ","").equals("EXIT")){
                     System.out.println("User: " + userName + " disconect.");
-                    in.close();
-                	out.close();
-                	clientSocket.close();
+                    // in.close();
+                	// out.close();
+                	// clientSocket.close();
                     break;
                     }
                 else{
