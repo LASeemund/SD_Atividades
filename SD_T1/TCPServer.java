@@ -239,7 +239,7 @@ class ClientThread extends Thread {
                     }
                     else{
                         System.out.println("nao tem arquivos");
-                        listBuffer = "não tem arquivos no diretorio\n";
+                        listBuffer = "\nnão tem arquivos no diretorio\n";
                     }
                     out.writeUTF(directoryGETDIRS.list().length + listBuffer);
                 }
