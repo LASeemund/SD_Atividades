@@ -128,7 +128,6 @@ public class TCPClient {
 				else{
 					System.out.println("Protocolo indevido.")
 				}
-
 				System.out.println("Server disse: " + buffer);
 			}
 		} catch (UnknownHostException ue) {
