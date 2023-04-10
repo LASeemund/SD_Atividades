@@ -42,17 +42,42 @@ public class TCPServer {
 
 
 class Path {
-	String _path;
+	private String _path;
+    private String _root;
+    
 	public Path(String str){
-		//this.path = new String(str);
+        this._root = "SD_T1/root";
 		this._path = (str);
+        File path = new File(this._root);
+        if(!path.exists()){
+            path.mkdir();
+        }
     }
 	public void addPath(String str){
-		//this.path = new String(this.path + str);
-		this._path = (this._path + str);
+        if(str.equals("..")){
+            for (int i = this._path.length()-2; i > 0; i = i-1) {
+                if(this._path.charAt(i) == ('\\')){
+                    this._path = this._path.substring(0,i);
+                    break;
+                }
+            }
+            for (int i = this._root.length()-2; i > 0; i = i-1) {
+                if(this._root.charAt(i) == ('\\')){
+                    this._root = this._root.substring(0,i);
+                    break;
+                }
+            }
+        }
+        else{
+            this._path = (this._path + str + "/");
+            this._root = (this._root + str);
+        }
 	}
 	public String getPath(){
 		return this._path;
+	}
+    public String getRootPath(){
+		return this._root;
 	}
 }
 
@@ -192,14 +217,31 @@ class ClientThread extends Thread {
                         for(File file : files) {
                             System.out.println(file.getName());
                         }
+
                         out.writeUTF("SUCCESS");
                     }
                     else{
                         out.writeUTF("ERROR");
                     }
                 }
-                else if(buffer == "GETDIRS"){
-                    
+                else if(buffer.replace(" ","").equals("GETDIRS")){
+                    File directoryGETDIRS = new File(this._path.getRootPath());
+                    String listBuffer = "";
+                    System.out.println(directoryGETDIRS.list().length);
+                    //System.out.println(Arrays.toString(list.toArray(directoryGETDIRS.list())));
+                    if(directoryGETDIRS.list().length > 0){
+                        //System.out.println(directoryGETDIRS.list());
+                        for (String pathname : directoryGETDIRS.list()) {
+                            listBuffer = listBuffer + "\n" + pathname;
+                        }
+                        listBuffer = listBuffer + "\n";
+                        System.out.println(listBuffer);
+                    }
+                    else{
+                        System.out.println("nao tem arquivos");
+                        listBuffer = "não tem arquivos no diretorio\n";
+                    }
+                    out.writeUTF(directoryGETDIRS.list().length + listBuffer);
                 }
                 else if(buffer == "EXIT"){
                     System.out.println("User: " + userName + " disconect.");
