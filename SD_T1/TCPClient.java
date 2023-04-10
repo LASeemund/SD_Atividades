@@ -71,26 +71,63 @@ public class TCPClient {
 			out.writeUTF("CONNECT " + bufferList.get(0) + " " + key.replace(" ", ""));
 
 			buffer = in.readUTF();
-			if (buffer.equals("ERROR")) {
+			if (buffer.replace(" ","").equals("ERROR")) {
 				System.out.println("ERROR: senha errada");
 			}
 			boolean loop = false;
-			if (buffer.equals("SUCCESS")) {
+			if (buffer.replace(" ","").equals("SUCCESS")) {
 				System.out.println("Logado");
 				loop = true;
 			}
-
+			System.out.print("Comandos:\nPWD\nCHDIR path\nGETFILES\nSUCCESS\nGETDIRS\nEXIT\n");
 			/* protocolo de comunicação */
 			while (loop) {
-				System.out.print("Mensagem: ");
-				buffer = reader.nextLine(); // lê mensagem via teclado
-
-				out.writeUTF(buffer); // envia a mensagem para o servidor
-
-				if (buffer.equals("PARAR"))
+				buffer = reader.nextLine().trim(); // lê mensagem via teclado
+				bufferList = Arrays.asList(buffer.split(" "));
+				if (buffer.equals("PARAR")){
 					break;
-
-				buffer = in.readUTF(); // aguarda resposta do servidor
+				}
+				else if(buffer.equals("PWD")){
+					out.writeUTF(buffer); // envia a mensagem para o servidor
+					buffer = in.readUTF(); // aguarda resposta para PWD
+					System.out.println(">" + buffer);
+				}
+				else if(bufferList.get(0).equals("CHDIR")){
+					if(bufferList.size() < 2){
+						System.out.println("ERROR NULL DIRECTORY");
+					}
+					else{
+						out.writeUTF(buffer); // envia a mensagem para o servidor
+						buffer = in.readUTF(); // aguarda resposta do servidor para o comando CHDIR
+						if(buffer.replace(" ","").equals("SUCCESS")){
+							/* faz o comando PWD depois do SUCCESS para saber o path do cliente */
+							out.writeUTF("PWD");
+							buffer = in.readUTF();
+							System.out.println(">" + buffer);
+							//System.out.println(">" + bufferList.get(1));
+						}
+						else{
+							System.out.println("Arquivo não existe.")
+						}
+					}
+				}
+				else if(buffer.equals("GETFILES")){
+					out.writeUTF(buffer); // envia a mensagem para o servidor
+					buffer = in.readUTF(); // aguarda resposta do servidor
+					System.out.println(buffer);
+				}
+				else if(buffer.equals("GETDIRS")){
+					out.writeUTF(buffer); // envia a mensagem para o servidor
+					buffer = in.readUTF(); // aguarda resposta do servidor
+					System.out.println(buffer);
+				}
+				else if(buffer.equals("EXIT")){
+					out.writeUTF(buffer);
+					break;
+				}
+				else{
+					System.out.println("Protocolo indevido.")
+				}
 				System.out.println("Server disse: " + buffer);
 			}
 		} catch (UnknownHostException ue) {
