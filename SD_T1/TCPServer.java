@@ -161,20 +161,8 @@ class ClientThread extends Thread {
                     out.writeUTF(this._path.getPath());
                     System.out.println("User: " + userName + " is at " + this._path.getPath());
                 }
-                else if(buffer.equals("CHDIR")){
-                    /* Acessa o diretório que o usuário digitar apos o comando CHDIR */
-                    out.writeUTF("ENTERDIR");
-                    buffer = in.readUTF();  /* aguarda o envio do diretório */
-                    File directoryCHDIR = new File(this._path.getPath() + buffer); 
-                    if(directoryCHDIR.exists()){ 
-                        Paths.get(buffer).toAbsolutePath().normalize(); /* normaliza o caminho */
-                        System.out.println("User: " + userName + " is at " + this._path.getPath() + buffer + "/");
-                        out.writeUTF("SUCCESS");
-                    }
-                    else{
-                        System.out.println("Error: Directory " + directoryCHDIR + " not found.");
-                        out.writeUTF("ERROR");
-                    }
+                else if(buffer == "CHDIR"){
+                    
                 }
                 else if(buffer == "GETFILES"){
                     
