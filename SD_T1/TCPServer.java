@@ -209,6 +209,7 @@ class ClientThread extends Thread {
                 }
                 else if(bufferData.get(0).equals("GETFILES")){
                     File directoryfiles = new File(currentDir); 
+                    String listBuffer = "";
                     /* lista os arquivos do diretório corrente */
                     if(directoryfiles.isDirectory()){
                         /* lista somente os arquivos do diretório corrente */
@@ -220,14 +221,23 @@ class ClientThread extends Thread {
                                 }
                             }
                         );
-                        System.out.println("Number of files: " + files.length);
-                        for(File file : files) {
-                            System.out.println(file.getName());
+                        if(directoryfiles.list().length > 0){ // se existir arquivos
+                          // System.out.println("Number of files: " + files.length);
+                          for(File file : files) {
+                              listBuffer = listBuffer + "\n" + file.getName();
+                          }
+                          listBuffer = listBuffer + "\n";
+                          // System.out.println(listBuffer);
                         }
-
-                        out.writeUTF("SUCCESS");
+                        else{
+                          System.out.println("nao tem arquivos");
+                          listBuffer = "\nnão tem arquivos no diretorio\n";
+                        }
+                        // out.writeUTF("SUCCESS");
+                        out.writeUTF("Quantidade arquivos: " + files.length + listBuffer);
+                        System.out.println("Quantidade arquivos: " + files.length + listBuffer);
                     }
-                    else{
+                    else{ //não é diretório valido.
                         out.writeUTF("ERROR");
                     }
                 }
