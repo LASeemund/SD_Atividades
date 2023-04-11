@@ -39,6 +39,7 @@ public class TCPClient {
 	public static void main(String args[]) {
 		Socket clientSocket = null; // socket do cliente
 		Scanner reader = new Scanner(System.in); // ler mensagens via teclado
+		boolean inMsg = false; // flag para indicar se a conexao deve continuar
 
 		try {
 			/* Endereço e porta do servidor */
@@ -85,14 +86,17 @@ public class TCPClient {
 				buffer = reader.nextLine().trim(); // lê mensagem via teclado
 				bufferList = Arrays.asList(buffer.split(" "));
 				if (buffer.equals("PARAR")){
+				inMsg = false;
 					break;
 				}
 				else if(buffer.equals("PWD")){
+					inMsg = false;
 					out.writeUTF(buffer); // envia a mensagem para o servidor
 					buffer = in.readUTF(); // aguarda resposta para PWD
 					System.out.println(">" + buffer);
 				}
 				else if(bufferList.get(0).equals("CHDIR")){
+					inMsg = false;
 					if(bufferList.size() < 2){
 						System.out.println("ERROR NULL DIRECTORY");
 					}
@@ -107,28 +111,40 @@ public class TCPClient {
 							//System.out.println(">" + bufferList.get(1));
 						}
 						else{
-							System.out.println("Arquivo não existe.")
+							System.out.println("Arquivo não existe.");
 						}
 					}
 				}
 				else if(buffer.equals("GETFILES")){
+					inMsg = false;
 					out.writeUTF(buffer); // envia a mensagem para o servidor
 					buffer = in.readUTF(); // aguarda resposta do servidor
 					System.out.println(buffer);
 				}
 				else if(buffer.equals("GETDIRS")){
+					inMsg = false;
 					out.writeUTF(buffer); // envia a mensagem para o servidor
 					buffer = in.readUTF(); // aguarda resposta do servidor
 					System.out.println(buffer);
+				}
+				else if(bufferList.get(0).equals("DELETE")){
+					out.writeUTF(buffer); // envia a mensagem para o servidor
+					buffer = in.readUTF(); // aguarda resposta do servidor para o comando CHDIR
+					if(buffer.replace(" ","").equals("SUCCESS")){
+						System.out.println("Arquivo deletado.");
+					}
 				}
 				else if(buffer.equals("EXIT")){
 					out.writeUTF(buffer);
 					break;
 				}
-				else{
-					System.out.println("Protocolo indevido.")
+				else{ //caso não for protocolo é mensagem.
+					// System.out.println("Protocolo indevido.");
+					inMsg = true;
 				}
-				System.out.println("Server disse: " + buffer);
+				if(inMsg){
+					System.out.println("Server disse: " + buffer);
+				}
 			}
 		} catch (UnknownHostException ue) {
 			System.out.println("Socket:" + ue.getMessage());
