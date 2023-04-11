@@ -83,7 +83,7 @@ public class TCPClient {
 			System.out.print("Comandos:\nPWD\nCHDIR path\nGETFILES\nGETDIRS\nEXIT\n");
 			/* protocolo de comunicação */
 			while (loop) {
-				System.out.println("$ ");
+				System.out.print("$ ");
 				buffer = reader.nextLine().trim(); // lê mensagem via teclado
 				bufferList = Arrays.asList(buffer.split(" "));
 				//PWD
