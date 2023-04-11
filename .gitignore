@@ -1,0 +1,8 @@
+# users
+SD_T1/users
+*.txt
+
+SD_T1/root
+
+# class
+*.class

@@ -39,6 +39,7 @@ public class TCPClient {
 	public static void main(String args[]) {
 		Socket clientSocket = null; // socket do cliente
 		Scanner reader = new Scanner(System.in); // ler mensagens via teclado
+		boolean inMsg = false; // flag para indicar se a conexao deve continuar
 
 		try {
 			/* Endereço e porta do servidor */
@@ -71,27 +72,74 @@ public class TCPClient {
 			out.writeUTF("CONNECT " + bufferList.get(0) + " " + key.replace(" ", ""));
 
 			buffer = in.readUTF();
-			if (buffer.equals("ERROR")) {
-				System.out.print("ERROR: senha errada");
+			if (buffer.replace(" ","").equals("ERROR")) {
+				System.out.println("ERROR: senha errada");
 			}
 			boolean loop = false;
-			if (buffer.equals("SUCCESS")) {
+			if (buffer.replace(" ","").equals("SUCCESS")) {
 				System.out.println("Logado");
 				loop = true;
 			}
-
+			System.out.print("Comandos:\nPWD\nCHDIR path\nGETFILES\nGETDIRS\nEXIT\n");
 			/* protocolo de comunicação */
 			while (loop) {
-				System.out.print("Mensagem: ");
-				buffer = reader.nextLine(); // lê mensagem via teclado
-
-				out.writeUTF(buffer); // envia a mensagem para o servidor
-
-				if (buffer.equals("PARAR"))
+				System.out.print("$ ");
+				buffer = reader.nextLine().trim(); // lê mensagem via teclado
+				bufferList = Arrays.asList(buffer.split(" "));
+				//PWD
+				if(buffer.equals("PWD")){
+					out.writeUTF(buffer); // envia a mensagem para o servidor
+					buffer = in.readUTF(); // aguarda resposta para PWD
+					System.out.println(">" + buffer);
+				}
+				else if(bufferList.get(0).equals("CHDIR")){  //CHDIR
+					if(bufferList.size() < 2){
+						System.out.println("ERROR NULL DIRECTORY");
+					}
+					else{
+						out.writeUTF(buffer); // envia a mensagem para o servidor
+						buffer = in.readUTF(); // aguarda resposta do servidor para o comando CHDIR
+						if(buffer.replace(" ","").equals("SUCCESS")){
+							/* faz o comando PWD depois do SUCCESS para saber o path do cliente */
+							out.writeUTF("PWD");
+							buffer = in.readUTF();
+							System.out.println(">" + buffer);
+							//System.out.println(">" + bufferList.get(1));
+						}
+						else{
+							System.out.println("Arquivo não existe.");
+						}
+					}
+				}
+				else if(buffer.equals("GETFILES")){  //GETFILES
+					out.writeUTF(buffer); // envia a mensagem para o servidor
+					buffer = in.readUTF(); // aguarda resposta do servidor
+					System.out.println("=========================================");
+					System.out.println("Quantidade de arquivos: " + buffer);
+					System.out.println("=========================================");
+				}
+				else if(buffer.equals("GETDIRS")){  //GETDIRS
+					out.writeUTF(buffer); // envia a mensagem para o servidor
+					buffer = in.readUTF(); // aguarda resposta do servidor
+					System.out.println("=========================================");
+					System.out.println("Quantidade de diretorios: " + buffer);
+					System.out.println("=========================================");
+				}
+				else if(bufferList.get(0).equals("DELETE")){  //DELETE
+					out.writeUTF(buffer); // envia a mensagem para o servidor
+					buffer = in.readUTF(); // aguarda resposta do servidor para o comando CHDIR
+					if(buffer.replace(" ","").equals("SUCCESS")){
+						System.out.println("Arquivo deletado.");
+					}
+				}
+				else if(buffer.equals("EXIT")){  //EXIT
+					out.writeUTF(buffer);
 					break;
-
-				buffer = in.readUTF(); // aguarda resposta do servidor
-				System.out.println("Server disse: " + buffer);
+				}
+				else{ //caso não for protocolo é mensagem.
+					// System.out.println("Protocolo indevido.");
+					System.out.println(buffer);
+				}
 			}
 		} catch (UnknownHostException ue) {
 			System.out.println("Socket:" + ue.getMessage());
