@@ -250,13 +250,21 @@ class ClientThread extends Thread {
                     }
                     out.writeUTF(directoryGETDIRS.list().length + listBuffer);
                 }
+                else if(bufferData.get(0).equals("DELETE")){
+                    File myObj = new File(bufferData.get(1)); 
+                    if (myObj.delete()) {
+                        out.writeUTF("SUCCESS");
+                    } else {
+                        out.writeUTF("ERROR");
+                    }
+                }
                 else if(buffer.replace(" ","").equals("EXIT")){
                     System.out.println("User: " + userName + " disconect.");
                     // in.close();
                 	// out.close();
                 	// clientSocket.close();
                     break;
-                    }
+                }
                 else{
                     System.out.println("Cliente disse: " + buffer);
                     out.writeUTF("MSG: protocolo indevido");

@@ -107,7 +107,7 @@ public class TCPClient {
 							//System.out.println(">" + bufferList.get(1));
 						}
 						else{
-							System.out.println("Arquivo não existe.")
+							System.out.println("Arquivo não existe.");
 						}
 					}
 				}
@@ -124,6 +124,16 @@ public class TCPClient {
 				else if(buffer.equals("EXIT")){
 					out.writeUTF(buffer);
 					break;
+				}
+				else if(bufferList.get(0).equals("DELETE")){
+					out.writeUTF(buffer); // envia a mensagem para o servidor
+					buffer = in.readUTF(); // aguarda resposta do servidor para o comando CHDIR
+					if(buffer.replace(" ","").equals("SUCCESS")){
+						System.out.println("Arquivo deletado.");
+					}
+					else{
+						System.out.println("Não foi possivel deletar o arquivo.");
+					}
 				}
 				else{
 					System.out.println("Protocolo indevido.")
