@@ -80,23 +80,19 @@ public class TCPClient {
 				System.out.println("Logado");
 				loop = true;
 			}
-			System.out.print("Comandos:\nPWD\nCHDIR path\nGETFILES\nSUCCESS\nGETDIRS\nEXIT\n");
+			System.out.print("Comandos:\nPWD\nCHDIR path\nGETFILES\nGETDIRS\nEXIT\n");
 			/* protocolo de comunicação */
 			while (loop) {
+				System.out.println("$ ");
 				buffer = reader.nextLine().trim(); // lê mensagem via teclado
 				bufferList = Arrays.asList(buffer.split(" "));
-				if (buffer.equals("PARAR")){
-				inMsg = false;
-					break;
-				}
-				else if(buffer.equals("PWD")){
-					inMsg = false;
+				//PWD
+				if(buffer.equals("PWD")){
 					out.writeUTF(buffer); // envia a mensagem para o servidor
 					buffer = in.readUTF(); // aguarda resposta para PWD
 					System.out.println(">" + buffer);
 				}
-				else if(bufferList.get(0).equals("CHDIR")){
-					inMsg = false;
+				else if(bufferList.get(0).equals("CHDIR")){  //CHDIR
 					if(bufferList.size() < 2){
 						System.out.println("ERROR NULL DIRECTORY");
 					}
@@ -115,35 +111,34 @@ public class TCPClient {
 						}
 					}
 				}
-				else if(buffer.equals("GETFILES")){
-					inMsg = false;
+				else if(buffer.equals("GETFILES")){  //GETFILES
 					out.writeUTF(buffer); // envia a mensagem para o servidor
 					buffer = in.readUTF(); // aguarda resposta do servidor
-					System.out.println(buffer);
+					System.out.println("=========================================");
+					System.out.println("Quantidade de arquivos: " + buffer);
+					System.out.println("=========================================");
 				}
-				else if(buffer.equals("GETDIRS")){
-					inMsg = false;
+				else if(buffer.equals("GETDIRS")){  //GETDIRS
 					out.writeUTF(buffer); // envia a mensagem para o servidor
 					buffer = in.readUTF(); // aguarda resposta do servidor
-					System.out.println(buffer);
+					System.out.println("=========================================");
+					System.out.println("Quantidade de diretorios: " + buffer);
+					System.out.println("=========================================");
 				}
-				else if(bufferList.get(0).equals("DELETE")){
+				else if(bufferList.get(0).equals("DELETE")){  //DELETE
 					out.writeUTF(buffer); // envia a mensagem para o servidor
 					buffer = in.readUTF(); // aguarda resposta do servidor para o comando CHDIR
 					if(buffer.replace(" ","").equals("SUCCESS")){
 						System.out.println("Arquivo deletado.");
 					}
 				}
-				else if(buffer.equals("EXIT")){
+				else if(buffer.equals("EXIT")){  //EXIT
 					out.writeUTF(buffer);
 					break;
 				}
 				else{ //caso não for protocolo é mensagem.
 					// System.out.println("Protocolo indevido.");
-					inMsg = true;
-				}
-				if(inMsg){
-					System.out.println("Server disse: " + buffer);
+					System.out.println(buffer);
 				}
 			}
 		} catch (UnknownHostException ue) {

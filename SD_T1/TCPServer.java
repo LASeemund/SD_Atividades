@@ -208,7 +208,7 @@ class ClientThread extends Thread {
                     }
                 }
                 else if(bufferData.get(0).equals("GETFILES")){
-                    File directoryfiles = new File(currentDir); 
+                    File directoryfiles = new File(this._path.getRootPath()); 
                     String listBuffer = "";
                     /* lista os arquivos do diretório corrente */
                     if(directoryfiles.isDirectory()){
@@ -221,7 +221,7 @@ class ClientThread extends Thread {
                                 }
                             }
                         );
-                        if(directoryfiles.list().length > 0){ // se existir arquivos
+                        if(files.length > 0){ // se existir arquivos
                           // System.out.println("Number of files: " + files.length);
                           for(File file : files) {
                               listBuffer = listBuffer + "\n" + file.getName();
@@ -234,7 +234,7 @@ class ClientThread extends Thread {
                           listBuffer = "\nnão tem arquivos no diretorio\n";
                         }
                         // out.writeUTF("SUCCESS");
-                        out.writeUTF("Quantidade arquivos: " + files.length + listBuffer);
+                        out.writeUTF(files.length + listBuffer);
                         System.out.println("Quantidade arquivos: " + files.length + listBuffer);
                     }
                     else{ //não é diretório valido.
@@ -245,20 +245,29 @@ class ClientThread extends Thread {
                     File directoryGETDIRS = new File(this._path.getRootPath());
                     String listBuffer = "";
                     System.out.println(directoryGETDIRS.list().length);
+                    File[] files = directoryGETDIRS.listFiles(
+                        new FileFilter() {
+                            @Override
+                            public boolean accept(File file) {
+                                return file.isDirectory();
+                            }
+                        }
+                    );
                     //System.out.println(Arrays.toString(list.toArray(directoryGETDIRS.list())));
-                    if(directoryGETDIRS.list().length > 0){
+                    if(files.length > 0){
                         //System.out.println(directoryGETDIRS.list());
-                        for (String pathname : directoryGETDIRS.list()) {
-                            listBuffer = listBuffer + "\n" + pathname;
+                        for (File pathname : files) {
+                            listBuffer = listBuffer + "\n" + pathname.getName();
                         }
                         listBuffer = listBuffer + "\n";
                         System.out.println(listBuffer);
                     }
                     else{
-                        System.out.println("nao tem arquivos");
-                        listBuffer = "\nnão tem arquivos no diretorio\n";
+                        System.out.println("nao tem diretorios.");
+                        listBuffer = "\nnão tem diretorios\n";
                     }
-                    out.writeUTF(directoryGETDIRS.list().length + listBuffer);
+                    //out.writeUTF(directoryGETDIRS.list().length + listBuffer);
+                    out.writeUTF(files.length + listBuffer);
                 }
                 else if(bufferData.get(0).equals("DELETE")){
                     File myObj = new File(bufferData.get(1)); 
