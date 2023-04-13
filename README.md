@@ -1,1 +1,1 @@
-# Atividades em Dupla da atividade de Sistemas Distribuidos
+# Atividades em Dupla da Materia de Sistemas Distribuidos
