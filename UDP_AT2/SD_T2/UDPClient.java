@@ -73,11 +73,11 @@ public class UDPClient {
                 byte[] t = msgtype.getBytes();      // transforma o tipo da mensagem em bytes
                 byte[] m = msg.getBytes();          // transforma a mensagem em bytes
 
-                int msgSize = 255, currentSize = m.length, bytePos = 0, nickSize = 0;
+                int msgSize = 255, currentSize = m.length, bytePos = 0, nickSize = 3;
                 byte [] buffer;
                 byte [] packetBuffer;
                 byte [] nick = new byte[64];
-
+                nick = "Ana".getBytes();
                 // envia pacotes para o servidor.
                 /*
                 1 = tipo da mensagem
