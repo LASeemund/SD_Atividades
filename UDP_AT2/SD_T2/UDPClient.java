@@ -73,28 +73,28 @@ public class UDPClient {
                 byte[] t = msgtype.getBytes();      // transforma o tipo da mensagem em bytes
                 byte[] m = msg.getBytes();          // transforma a mensagem em bytes
 
-                int total = m.length, pos = 0, newlength = 255;
-                byte[] buffer = new byte[newlength];
-
-                // envia pacotes de 255 bytes
+                // envia pacotes de 255 bytes para o servidor.
+                int packetSize = 255, msgSize = m.length, bytePos = 0;
+                byte [] packetBuffer;
                 while(true){
-                    if(total <= 0) break;
-
-                    if(total < 255){
-                        newlength = total;
+                    if(msgSize < packetSize) { //está proximo do final da msg.
+                        packetSize = msgSize;
                     }
-                    buffer = new byte[newlength];
-                    System.arraycopy(m, pos, buffer, 0, newlength);
                     
-                    /* cria um pacote datagrama */
-                    DatagramPacket request
-                            = new DatagramPacket(buffer, buffer.length, serverAddr, serverPort);
+                    // separa a mensagem em pacotes de 255 bytes
+                    packetBuffer = new byte[packetSize];
+                    System.arraycopy(m, bytePos, packetBuffer, 0, packetSize);
 
-                    /* envia o pacote */
+                    // cria um pacote datagrama 
+                    DatagramPacket request
+                            = new DatagramPacket(packetBuffer, packetBuffer.length, serverAddr, serverPort);
+
+                    // envia o pacote 
                     dgramSocket.send(request);
 
-                    total -= newlength;
-                    pos += 255;
+                    msgSize -= packetSize;
+                    if(msgSize <= 0) break;
+                    bytePos += packetSize;
                 }
 
                 /* cria um buffer vazio para receber datagramas */
