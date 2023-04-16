@@ -1,2 +1,1 @@
-# SD_tarefinha1
-tarefa de SD
+# Atividades em Dupla da Materia de Sistemas Distribuidos
