@@ -8,6 +8,8 @@ import java.net.*;
 import java.io.*;
 import javax.swing.JOptionPane;
 
+import java.nio.charset.StandardCharsets; //lembrar de remover quando nao usar mais
+
 public class UDPClient {
     
     // valida se a string é um URL
@@ -54,24 +56,28 @@ public class UDPClient {
             do {
                 String msg = JOptionPane.showInputDialog("Digite a mensagem:");
 
-                String msgtype = "";
+                Byte msgtype = 0;
 
                 // verifica se a mensagem é um ECHO, URL ou EMOJI
                 if(msg == "ECHO"){
-                    msgtype = "1"; // 1 = ECHO
+                    msgtype = 1; // 1 = ECHO
                 }
                 else if(isURL(msg)){
-                    msgtype = "2"; // 2 = URL
+                    msgtype = 2; // 2 = URL
                 }
                 else if(stringIsEmoji(msg)){
-                    msgtype = "3"; // 3 = EMOJI
+                    msgtype = 3; // 3 = EMOJI
                 }
                 else{
-                    msgtype = "4"; // 4 = Mensagem normal
+                    msgtype = 4; // 4 = Mensagem normal
                 }
 
-                byte[] t = msgtype.getBytes();      // transforma o tipo da mensagem em bytes
-                byte[] m = msg.getBytes();          // transforma a mensagem em bytes
+                /** Cria o buffer com o formato da mensagem */
+                byte[] m = new byte[msg.getBytes().length];          // transforma a mensagem em bytes
+                System.arraycopy(msg.getBytes(), 0, m, 0, msg.getBytes().length);
+                //System.arraycopy(a, 0, c, 0, a.length);
+                //System.arraycopy(b, 0, c, a.length, b.length);
+
 
                 int total = m.length, pos = 0, newlength = 255;
                 byte[] buffer = new byte[newlength];
@@ -84,6 +90,7 @@ public class UDPClient {
                         newlength = total;
                     }
                     buffer = new byte[newlength];
+                    System.out.println(new String(buffer, StandardCharsets.UTF_8));
                     System.arraycopy(m, pos, buffer, 0, newlength);
                     
                     /* cria um pacote datagrama */
