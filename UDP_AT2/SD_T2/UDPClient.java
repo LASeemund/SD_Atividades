@@ -73,28 +73,50 @@ public class UDPClient {
                 byte[] t = msgtype.getBytes();      // transforma o tipo da mensagem em bytes
                 byte[] m = msg.getBytes();          // transforma a mensagem em bytes
 
-                // envia pacotes de 255 bytes para o servidor.
-                int packetSize = 255, msgSize = m.length, bytePos = 0;
+                int msgSize = 255, currentSize = m.length, bytePos = 0, nickSize = 0;
+                byte [] buffer;
                 byte [] packetBuffer;
+                byte [] nick = new byte[64];
+
+                // envia pacotes para o servidor.
+                /*
+                1 = tipo da mensagem
+                1 = tamanho do apelido
+                1-64  nickSize
+                1 = tamanho da mensagem
+                0-255  msgSize
+                 */
                 while(true){
-                    if(msgSize < packetSize) { //está proximo do final da msg.
-                        packetSize = msgSize;
+                    if(currentSize < msgSize) { //está proximo do final da msg.
+                        msgSize = currentSize;
                     }
                     
                     // separa a mensagem em pacotes de 255 bytes
-                    packetBuffer = new byte[packetSize];
-                    System.arraycopy(m, bytePos, packetBuffer, 0, packetSize);
+                    packetBuffer = new byte[msgSize];
+                    System.arraycopy(m, bytePos, packetBuffer, 0, msgSize);
+
+                    // cria um buffer com o tipo da mensagem, tam apelido, apelido, tamanho e conteudo da mensagem
+                    byte nickSizeByte = (byte) nickSize;
+                    byte msgSizeByte = (byte) msgSize;
+                    buffer = new byte[1 + 1 + nickSizeByte + 1 + msgSizeByte]; 
+
+                    // popular o buffer
+                    buffer[0] = t[0];
+                    buffer[1] = nickSizeByte;
+                    System.arraycopy(nick, 0, buffer, 2, nickSizeByte);
+                    buffer[2 + nickSizeByte] = msgSizeByte;
+                    System.arraycopy(packetBuffer, 0, buffer, 3 + nickSizeByte, msgSizeByte);
 
                     // cria um pacote datagrama 
                     DatagramPacket request
-                            = new DatagramPacket(packetBuffer, packetBuffer.length, serverAddr, serverPort);
+                            = new DatagramPacket(buffer, buffer.length, serverAddr, serverPort);
 
                     // envia o pacote 
                     dgramSocket.send(request);
 
-                    msgSize -= packetSize;
-                    if(msgSize <= 0) break;
-                    bytePos += packetSize;
+                    currentSize -= msgSize;
+                    if(currentSize <= 0) break;
+                    bytePos += msgSize;
                 }
 
                 /* cria um buffer vazio para receber datagramas */
