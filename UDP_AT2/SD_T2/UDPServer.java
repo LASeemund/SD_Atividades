@@ -1,4 +1,4 @@
-package aula_udp;
+package SD_T2;
 
 /**
  * UDPServer: Servidor UDP
