@@ -64,6 +64,7 @@ public class UDPClient {
     public static void main(String args[]) {
         DatagramSocket dgramSocket;
         int resp = 0;
+        String packageName = "SD_T2";
 
         try {
             dgramSocket = new DatagramSocket(); //cria um socket datagrama
@@ -106,15 +107,24 @@ public class UDPClient {
 
                 String msgtype = "";
 
+                List<String> protocolList;
+                protocolList = Arrays.asList(msg.split(" "));
+
                 // verifica se a mensagem é um ECHO, URL ou EMOJI
-                if(msg == "ECHO"){
+                if(protocolList.get(0).equals("ECHO")){
                     msgtype = "1"; // 1 = ECHO
                 }
-                else if(isURL(msg)){
+                else if(isURL(protocolList.get(0))){
                     msgtype = "2"; // 2 = URL
                 }
-                else if(stringIsEmoji(msg)){
+                else if(stringIsEmoji(protocolList.get(0))){
                     msgtype = "3"; // 3 = EMOJI
+                }
+                else if(protocolList.get(0).equals("UPFILE")){ // Dir é fixo packageName + "/users/" + userName
+                    msgtype = "5"; // 5 = UPFILE
+                    // Ex: UPFILE /home/user/arquivo.txt 
+                    //protocolList.get(1) - dir arquivo a ser upado + nome do arquivo
+
                 }
                 else{
                     msgtype = "4"; // 4 = Mensagem normal
