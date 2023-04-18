@@ -63,8 +63,11 @@ public class UDPClient {
 
     public static void main(String args[]) {
         DatagramSocket dgramSocket;
-        int resp = 0;
         String packageName = "SD_T2";
+        int resp = 0;
+        byte [] buffer;
+        byte [] packetBuffer;
+        byte [] nick = new byte[64];
 
         try {
             dgramSocket = new DatagramSocket(); //cria um socket datagrama
@@ -120,10 +123,39 @@ public class UDPClient {
                 else if(stringIsEmoji(protocolList.get(0))){
                     msgtype = "3"; // 3 = EMOJI
                 }
-                else if(protocolList.get(0).equals("UPFILE")){ // Dir é fixo packageName + "/users/" + userName
+                else if(protocolList.get(0).equals("UPFILE")){ // Dir é fixo packageName + "/users/" + filename + "." + filetype
                     msgtype = "5"; // 5 = UPFILE
-                    // Ex: UPFILE /home/user/arquivo.txt 
-                    //protocolList.get(1) - dir arquivo a ser upado + nome do arquivo
+                    // Ex: UPFILE /home/user/arquivo.txt novoArquivo.txt
+                    // String dir = packageName + "/users/" + fileName + "." + fileType;
+                    byte[] t = msgtype.getBytes();
+                    int bytesRead = 0;
+                    byte[] fileBuffer = new byte[1024];
+
+                    buffer = new byte[1 + 1 + protocolList.get(2).length()]; // 1 = tipo da mensagem, 1 = tamanho dos dados, nome do arquivo
+                    buffer[0] = t[0];
+                    buffer[1] = (byte) protocolList.get(2).length();
+                    System.arraycopy(protocolList.get(2).getBytes(), 0, buffer, 2, protocolList.get(2).length());
+
+                    DatagramPacket fileRequest = new DatagramPacket(buffer, buffer.length, serverAddr, serverPort);
+                        dgramSocket.send(fileRequest);
+
+                    /*
+                    1 = tipo da mensagem
+                    1 = tamanho dos dados
+                    1-1024  dados (arquivo)
+                    */
+                    FileInputStream fileInput = new FileInputStream(packageName + "/" + protocolList.get(1));
+                    String line;
+                    while((bytesRead = fileInput.read(fileBuffer)) != -1){
+                        buffer = new byte[1 + 1 + bytesRead]; // 1 = tipo da mensagem, 1 = tamanho dos dados, dados
+                        buffer[0] = t[0];
+                        buffer[1] = (byte) bytesRead;
+                        System.arraycopy(fileBuffer, 0, buffer, 2, bytesRead);
+
+                        fileRequest = new DatagramPacket(buffer, buffer.length, serverAddr, serverPort);
+                        dgramSocket.send(fileRequest);
+                    }
+                    fileInput.close();
 
                 }
                 else{
@@ -132,12 +164,8 @@ public class UDPClient {
 
                 byte[] t = msgtype.getBytes();      // transforma o tipo da mensagem em bytes
                 byte[] m = msg.getBytes();          // transforma a mensagem em bytes
-
-                int msgSize = 255, currentSize = m.length, bytePos = 0;
-                byte [] buffer;
-                byte [] packetBuffer;
-                byte [] nick = new byte[64];
                 
+                int msgSize = 255, currentSize = m.length, bytePos = 0;
                 nick = bufferList.get(0).getBytes();
                 int nickSize = nick.length;
                 // envia pacotes para o servidor.
