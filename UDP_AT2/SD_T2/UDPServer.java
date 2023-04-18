@@ -51,8 +51,10 @@ public class UDPServer{
 
                     if(!(key.get(2).replace(" ", "").equals(line.toString()))){ /* usuario errou a senha, desconectando user */
                         System.out.println("User: " + userName + " disconnected");
+                        //enviar mensagem de error
                     }
                     else{ /* usuario conectado */
+                        //enviar mensagem de success
                         System.out.println("User: " + userName + " connected");
                     }
                 }
