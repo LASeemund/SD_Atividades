@@ -13,6 +13,8 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
+import java.nio.charset.StandardCharsets;
+
 public class UDPServer{
     public static void main(String args[]){ 
     	DatagramSocket dgramSocket = null;
@@ -79,13 +81,26 @@ public class UDPServer{
                 msgSize = dgramPacket.getData()[2 + nickSize];
                 System.arraycopy(dgramPacket.getData(), 3 + nickSize, msg, 0, msgSize);
                 // System.out.println("Tipo: " + type + " " + new String(nick, 0, nickSize) + " disse: " + new String(msg, 0, msgSize) + " Tam Ap: " + nickSize + " Tam Msg: " + msgSize);
-                System.out.println(new String(nick, 0, nickSize) + " disse: " + new String(msg, 0, msgSize));
-                // /* imprime e envia o datagrama de volta ao cliente */ 
-                // DatagramPacket reply = new DatagramPacket(dgramPacket.getData(),
-                //         dgramPacket.getLength(), dgramPacket.getAddress(), dgramPacket.getPort()); // cria um pacote com os dados
-                DatagramPacket reply = new DatagramPacket("OK".getBytes(), 2, dgramPacket.getAddress(), dgramPacket.getPort()); // cria um pacote com os dados
 
-                dgramSocket.send(reply); // envia o pacote
+                //verifica se é ECHO
+                //List <String> msgLString = Arrays.asList(new String(msg, StandardCharsets.UTF_8).trim().split(" "));
+                //if(msgLString.get(0).equals("ECHO")){
+                if(dgramPacket.getData()[0] == 1){
+                    //retorna o ECHO para o cliente
+                    DatagramPacket reply = new DatagramPacket(msg, msgSize, dgramPacket.getAddress(), dgramPacket.getPort()); // cria um pacote com os dados
+                    dgramSocket.send(reply); // envia o pacote
+                }
+                else{
+                    /* imprime e envia o datagrama de volta ao cliente */ 
+                    System.out.println(new String(nick, 0, nickSize) + " disse: " + new String(msg, 0, msgSize));
+
+                    // DatagramPacket reply = new DatagramPacket(dgramPacket.getData(),
+                    //         dgramPacket.getLength(), dgramPacket.getAddress(), dgramPacket.getPort()); // cria um pacote com os dados
+                    
+                    DatagramPacket reply = new DatagramPacket("OK".getBytes(), 2, dgramPacket.getAddress(), dgramPacket.getPort()); // cria um pacote com os dados
+                    dgramSocket.send(reply); // envia o pacote
+                }
+                
             } //while
         }catch (SocketException e){
             System.out.println("Socket: " + e.getMessage());
