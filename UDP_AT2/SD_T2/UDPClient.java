@@ -6,11 +6,19 @@ package SD_T2;
  */
 import java.net.*;
 import java.io.*;
-import javax.swing.JOptionPane;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+
+/** import do javax */
+import java.awt.*;
+import javax.swing.*;
+import javax.swing.Box;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 /* import para o sha512 */
 import java.nio.charset.StandardCharsets;
@@ -18,7 +26,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class UDPClient {
-
     /* https://stackoverflow.com/a/33085670 */
 	public static String get_SHA_512_SecurePassword(String passwordToHash, String salt) {
 		String generatedPassword = null;
@@ -36,7 +43,7 @@ public class UDPClient {
 		}
 		return generatedPassword;
 	}
-    
+
     // valida se a string é um URL
     // https://stackoverflow.com/questions/163360/regular-expression-to-match-urls-in-java (alterada para apenas validar urls)
     public static boolean isURL(String inputStr) {
@@ -71,57 +78,84 @@ public class UDPClient {
 
         try {
             dgramSocket = new DatagramSocket(); //cria um socket datagrama
-            
+
+            //cria o buffer para receber o datagrama
+            byte [] bufferRecive = new byte[256];
+            DatagramPacket dgrambufferRecive = new DatagramPacket(bufferRecive, bufferRecive.length);
+
             //127.0.0.1 6666
             // String dstIP = JOptionPane.showInputDialog("IP Destino?");
             // int dstPort = Integer.parseInt(JOptionPane.showInputDialog("Porta Destino?"));
             String dstIP = "127.0.0.1";
             int dstPort = 6666;
-            
+
             /* armazena o IP do destino */
             InetAddress serverAddr = InetAddress.getByName(dstIP);
             int serverPort = dstPort; // porta do servidor
 
-            String login = JOptionPane.showInputDialog("Digite o usuario e a senha. (User, Password): ");
+            /** pega o user e senha */
+            JTextField JTFLogin = new JTextField(10);
+            JTextField JTFPassword = new JTextField(10);
+            JPanel myPanel = new JPanel();
+            myPanel.setLayout(new BoxLayout(myPanel,BoxLayout.Y_AXIS));
+            //myPanel.setAlignmentX(LEFT_ALIGNMENT);
 
-			/** separa o User do Passowrd */
-			List<String> bufferList;
+            myPanel.add(new JLabel("Digite o usuario: "));
+            myPanel.add(JTFLogin);
+            //myPanel.add(Box.createVerticalStrut(15)); // a \n
+            myPanel.add(new JLabel("Digite a senha: ")); //.setAlignmentX(LEFT_ALIGNMENT)
+            myPanel.add(JTFPassword);
+
+            String login, Password;
+            if (JOptionPane.showConfirmDialog(null, myPanel,"Digite o usuario e a senha:",
+            JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION){
+                login = JTFLogin.getText().replace(" ", "");
+                Password = JTFPassword.getText().replace(" ", "");
+            }
+            else{
+                dgramSocket.close();
+                return;
+            }
+            //String login = JOptionPane.showInputDialog("Digite o usuario e a senha: ");
+
 			String key;
 
-			/** separa por uma ',' ou apenas por espaço */
-			try{
-				bufferList = Arrays.asList(login.split(","));
-				key = bufferList.get(1); /** para verficar se tem , na get(1) */
-			}catch(ArrayIndexOutOfBoundsException exception){
-				bufferList = Arrays.asList(login.split(" "));
-			}
-			key = get_SHA_512_SecurePassword(bufferList.get(1).replace(" ", ""), "TheOnePieceIsReal");
-            String user = "CONNECT " + bufferList.get(0) + " " + key.replace(" ", "");
+			key = get_SHA_512_SecurePassword(Password, "TheOnePieceIsReal").replace(" ", "");
+            String user = "CONNECT " + login + " " + key;
             byte [] userBytes = user.getBytes(); // transforma o login em bytes
             // cria um pacote datagrama do login.
             DatagramPacket userRequest
-                    = new DatagramPacket(userBytes, userBytes.length, serverAddr, serverPort);
+                = new DatagramPacket(userBytes, userBytes.length, serverAddr, serverPort);
 
             // envia o pacote do login.
             dgramSocket.send(userRequest);
+            // fazer com que receba se o login esta correto
+            //dgramSocket.receive(dgrambufferRecive);
+            //byte[] receive = new byte[dgrambufferRecive.getBytes().length]; // transforma a mensagem em bytes
+            //System.arraycopy(dgrambufferRecive.getBytes(), 0, receive, 0, dgrambufferRecive.getBytes().length);
+
 
             do {
                 String msg = JOptionPane.showInputDialog("Digite a mensagem:");
 
-                String msgtype = "";
+                Byte msgtype = 0;
+
+                List<String> protocolList;
+                protocolList = Arrays.asList(msg.split(" "));
 
                 List<String> protocolList;
                 protocolList = Arrays.asList(msg.split(" "));
 
                 // verifica se a mensagem é um ECHO, URL ou EMOJI
                 if(protocolList.get(0).equals("ECHO")){
-                    msgtype = "1"; // 1 = ECHO
+                    msgtype = 1; // 1 = ECHO
+                    msg = Arrays.asList(msg.split(" ", 2)).get(1);
                 }
                 else if(isURL(protocolList.get(0))){
-                    msgtype = "2"; // 2 = URL
+                    msgtype = 2; // 2 = URL
                 }
                 else if(stringIsEmoji(protocolList.get(0))){
-                    msgtype = "3"; // 3 = EMOJI
+                    msgtype = 3; // 3 = EMOJI
                 }
                 else if(protocolList.get(0).equals("UPFILE")){ // Dir é fixo packageName + "/users/" + filename + "." + filetype
                     msgtype = "5"; // 5 = UPFILE
@@ -159,14 +193,22 @@ public class UDPClient {
 
                 }
                 else{
-                    msgtype = "4"; // 4 = Mensagem normal
+                    msgtype = 4; // 4 = Mensagem normal
                 }
 
-                byte[] t = msgtype.getBytes();      // transforma o tipo da mensagem em bytes
-                byte[] m = msg.getBytes();          // transforma a mensagem em bytes
-                
+                /** Cria o buffer com o formato da mensagem */
+                byte[] m = new byte[msg.getBytes().length]; // transforma a mensagem em bytes
+                System.arraycopy(msg.getBytes(), 0, m, 0, msg.getBytes().length);
+                //System.arraycopy(a, 0, c, 0, a.length);
+                //System.arraycopy(b, 0, c, a.length, b.length);
+
+
                 int msgSize = 255, currentSize = m.length, bytePos = 0;
-                nick = bufferList.get(0).getBytes();
+                byte [] buffer;
+                byte [] packetBuffer;
+                byte [] nick = new byte[64];
+
+                nick = login.getBytes();
                 int nickSize = nick.length;
                 // envia pacotes para o servidor.
                 /*
@@ -180,7 +222,7 @@ public class UDPClient {
                     if(currentSize < msgSize) { //está proximo do final da msg.
                         msgSize = currentSize;
                     }
-                    
+
                     // separa a mensagem em pacotes de 255 bytes
                     packetBuffer = new byte[msgSize];
                     System.arraycopy(m, bytePos, packetBuffer, 0, msgSize);
@@ -188,20 +230,20 @@ public class UDPClient {
                     // cria um buffer com o tipo da mensagem, tam apelido, apelido, tamanho e conteudo da mensagem
                     byte nickSizeByte = (byte) nickSize;
                     byte msgSizeByte = (byte) msgSize;
-                    buffer = new byte[1 + 1 + nickSizeByte + 1 + msgSizeByte]; 
+                    buffer = new byte[1 + 1 + nickSizeByte + 1 + msgSizeByte];
 
                     // popular o buffer
-                    buffer[0] = t[0];
+                    buffer[0] = msgtype;
                     buffer[1] = nickSizeByte;
                     System.arraycopy(nick, 0, buffer, 2, nickSizeByte);
                     buffer[2 + nickSizeByte] = msgSizeByte;
                     System.arraycopy(packetBuffer, 0, buffer, 3 + nickSizeByte, msgSizeByte);
 
-                    // cria um pacote datagrama 
+                    // cria um pacote datagrama
                     DatagramPacket request
                             = new DatagramPacket(buffer, buffer.length, serverAddr, serverPort);
 
-                    // envia o pacote 
+                    // envia o pacote
                     dgramSocket.send(request);
 
                     currentSize -= msgSize;
@@ -229,5 +271,5 @@ public class UDPClient {
         } catch (IOException e) {
             System.out.println("IO: " + e.getMessage());
         } //catch
-    } //main		      	
+    } //main
 } //class
