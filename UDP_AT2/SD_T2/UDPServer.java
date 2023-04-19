@@ -24,6 +24,7 @@ public class UDPServer{
         byte[] nick = new byte[64];
         byte[] msg = new byte[256];
         byte[] buffer = new byte[1000];
+        byte[] fileName = new byte[1000];
 
         String packageName = "SD_T2";
         try{
@@ -76,11 +77,52 @@ public class UDPServer{
                 dgramSocket.receive(dgramPacket);  // aguarda a chegada de datagramas
 
                 type = new String(dgramPacket.getData(), 0, 1);
-                nickSize = dgramPacket.getData()[1];
-                System.arraycopy(dgramPacket.getData(), 2, nick, 0, nickSize);
-                msgSize = dgramPacket.getData()[2 + nickSize];
-                System.arraycopy(dgramPacket.getData(), 3 + nickSize, msg, 0, msgSize);
-                // System.out.println("Tipo: " + type + " " + new String(nick, 0, nickSize) + " disse: " + new String(msg, 0, msgSize) + " Tam Ap: " + nickSize + " Tam Msg: " + msgSize);
+
+                //se mensagem for do tipo 5, é uma mensagem de upload de arquivo
+                if(type.equals("5")){
+                    int fileNameSize = dgramPacket.getData()[1];
+                    System.arraycopy(dgramPacket.getData(), 2, fileName, 0, fileNameSize);
+
+                    //cria o arquivo
+                    fileUser = new File(packageName + "/upload");
+                    if(!fileUser.exists()){
+                        fileUser.mkdir();
+                    }
+                    fileUser = new File(packageName + "/upload/" + userName);
+                    if(!fileUser.exists()){
+                        fileUser.mkdir();
+                    }
+
+                    FileWriter fw = new FileWriter(packageName + "/upload/" + userName + "/" + new String(fileName, 0, fileNameSize));
+
+                    while(true){
+                        dgramPacket = new DatagramPacket(buffer, buffer.length);
+                        dgramSocket.receive(dgramPacket);  // aguarda a chegada de datagramas
+
+                        msgSize = dgramPacket.getData()[1];
+                        System.arraycopy(dgramPacket.getData(), 2, msg, 0, msgSize);
+
+                        if(msgSize == 0){
+                            break;
+                        }
+
+                        fw.write(new String(msg, 0, msgSize));
+                    }
+
+                }
+                else{
+                    nickSize = dgramPacket.getData()[1];
+                    System.arraycopy(dgramPacket.getData(), 2, nick, 0, nickSize);
+                    msgSize = dgramPacket.getData()[2 + nickSize];
+                    System.arraycopy(dgramPacket.getData(), 3 + nickSize, msg, 0, msgSize);
+                    // System.out.println("Tipo: " + type + " " + new String(nick, 0, nickSize) + " disse: " + new String(msg, 0, msgSize) + " Tam Ap: " + nickSize + " Tam Msg: " + msgSize);
+                    System.out.println(new String(nick, 0, nickSize) + " disse: " + new String(msg, 0, msgSize));
+                }
+                
+                // /* imprime e envia o datagrama de volta ao cliente */ 
+                // DatagramPacket reply = new DatagramPacket(dgramPacket.getData(),
+                //         dgramPacket.getLength(), dgramPacket.getAddress(), dgramPacket.getPort()); // cria um pacote com os dados
+                DatagramPacket reply = new DatagramPacket("OK".getBytes(), 2, dgramPacket.getAddress(), dgramPacket.getPort()); // cria um pacote com os dados
 
                 //verifica se é ECHO
                 //List <String> msgLString = Arrays.asList(new String(msg, StandardCharsets.UTF_8).trim().split(" "));
