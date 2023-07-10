@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package messages;
+
+service TesteService{
+  rpc Findtitle(FindTitle) returns (Movie);
+}
+
+message FindTitle {
+  string title = 1;
+}
+
+message FindCategory {
+  string category = 1;
+}
+
+message FindActor {
+  string actor = 1;
+}
+
+message Movie {
+  string plot = 1;
+  repeated string genres = 2;
+  int32 runtime = 3;
+  repeated string cast = 4;
+  int32 num_mflix_comments = 5;
+  string title = 6;
+  string fullplot = 7;
+  repeated string countries = 8;
+  string released = 9;
+  repeated string directors = 10;
+  string rated = 11;
+  string lastupdated = 12;
+  int32 year = 13;
+  string type = 14;
+}
+
+message FindResponse {
+  repeated Movie movies = 1;
+}
+
+message Create {
+  string title = 1;
+  string plot = 2;
+  string fullplot = 3;
+  repeated string cast = 4;
+  optional string released = 5;
+}
+
+message Update {
+  Movie movies = 1;
+}
+
+message Delete {
+  string title = 1;
+}

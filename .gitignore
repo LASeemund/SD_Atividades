@@ -1,8 +1,19 @@
 # users
-SD_T1/users
+SD/users
 *.txt
 
-SD_T1/root
+RPC/Client/grpc-java-1.56.0/*
+RPC/Client/target/classes/*
+RPC/Client/target/maven-status/*
+RPC/Client/target/protoc-dependencies/*
+RPC/Client/target/protoc-plugins/*
+RPC/Client/target/test-classes/*
+RPC/Server/__pycache__/*
+
 
 # class
 *.class
+RPC/Client/protobuf-java-2.5.0.jar
+RPC/Client/protoc.exe
+RPC/protoc
+RPC/protoct.exe

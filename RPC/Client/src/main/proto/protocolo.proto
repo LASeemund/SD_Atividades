@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package messages;
+
+service TesteService{
+  rpc findtitleMsg(FindTitle) returns (Movie);
+  rpc findcategoryMsg(FindCategory) returns (FindResponse);
+  rpc findactorMsg(FindActor) returns (FindResponse);
+  rpc createMsg(Create) returns (Movie);
+  rpc updateMsg(Update) returns (Movie);
+  rpc deleteMsg(Delete) returns (Response);
+}
+
+message FindTitle {
+  string title = 1;
+}
+
+message FindCategory {
+  string category = 1;
+}
+
+message FindActor {
+  string actor = 1;
+}
+
+message Movie {
+  string plot = 1;
+  repeated string genres = 2;
+  int32 runtime = 3;
+  repeated string cast = 4;
+  int32 num_mflix_comments = 5;
+  string title = 6;
+  string fullplot = 7;
+  repeated string countries = 8;
+  string released = 9;
+  repeated string directors = 10;
+  string rated = 11;
+  string lastupdated = 12;
+  int32 year = 13;
+  string type = 14;
+}
+
+message FindResponse {
+  repeated Movie movies = 1;
+}
+
+message Create {
+  string title = 1;
+  string plot = 2;
+  string fullplot = 3;
+}
+
+message Update {
+  string title = 1;
+  Movie movies = 2;
+}
+
+message Delete {
+  string title = 1;
+}
+
+message Response {
+  string msg = 1;
+}
