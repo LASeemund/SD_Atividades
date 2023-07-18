@@ -65,11 +65,3 @@ Aluno: Lucas Alexandre Seemund
             Drama
         FindActor
             Martin Fuller
-        Create
-            A
-            A
-            A
-            A
-        Update
-        Remove
-            A

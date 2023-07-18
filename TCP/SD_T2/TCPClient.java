@@ -6,7 +6,7 @@
  * Creation Date: 9 / 7 / 2023
  */
 
-package SD_T1;
+package SD_T2;
 
 import java.net.*;
 import java.io.*;
@@ -42,6 +42,20 @@ public class TCPClient {
 		Socket clientSocket = null; // socket do cliente
 		Scanner reader = new Scanner(System.in); // ler mensagens via teclado
 		boolean inMsg = false; // flag para indicar se a conexao deve continuar
+
+		//solicitação
+		byte messageType;
+		byte command;
+		byte fileNameSize;
+		byte[255] fileName;
+
+		byte resp;
+		byte command;
+		byte status;
+
+		ByteBuffer bb = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN);
+		bb.putShort(a.a).put(a.b).putInt(a.c).flip();
+		byte[] buffer = bb.array();
 
 		try {
 			/* Endereço e porta do servidor */
@@ -82,7 +96,9 @@ public class TCPClient {
 				System.out.println("Logado");
 				loop = true;
 			}
-			System.out.print("Comandos:\nPWD\nCHDIR path\nGETFILES\nGETDIRS\nEXIT\n");
+			String packageName = "SD_T2";
+
+			System.out.print("Comandos:\nPWD\nCHDIR path\nGETFILES\nGETDIRS\nADDFILE path\nDELETE path\nGETFILESLIST\nGETFILE path\nEXIT\n");
 			/* protocolo de comunicação */
 			while (loop) {
 				System.out.print("$ ");
@@ -127,13 +143,95 @@ public class TCPClient {
 					System.out.println("Quantidade de diretorios: " + buffer);
 					System.out.println("=========================================");
 				}
-				else if(bufferList.get(0).equals("DELETE")){  //DELETE
-					out.writeUTF(buffer); // envia a mensagem para o servidor
-					buffer = in.readUTF(); // aguarda resposta do servidor para o comando CHDIR
-					if(buffer.replace(" ","").equals("SUCCESS")){
-						System.out.println("Arquivo deletado.");
-					}
-				}
+				// Questao 2 ========================================================================
+				else if (bufferList.get(0).equals("ADDFILE")) {
+                    if (bufferList.size() < 2) {
+                        System.out.println("ERROR NULL FILENAME");
+                    } else {
+                        String filePath = bufferList.get(1);
+                        File file = new File(filePath);
+
+                        if (!file.exists()) { //verifica se o arquivo existe
+                            System.out.println("Error: File " + filePath + " not found.");
+                        } else {
+                            out.writeUTF(bufferList.get(0) + " " + file.getName());
+                            buffer = in.readUTF(); //recebe se pode enviar o arquivo
+                            if (buffer.replace(" ","").equals("ADDFILE_OK")) {
+								
+								//envio do arquivo
+								FileInputStream fileInputStream = new FileInputStream(file);
+								BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+								OutputStream outputStream = clientSocket.getOutputStream();
+
+								byte[] bufferB = new byte[4096];
+								int bytesRead;
+								while ((bytesRead = bufferedInputStream.read(bufferB)) > 0) {
+									outputStream.write(bufferB, 0, bytesRead);
+									outputStream.flush();
+								}
+
+                                System.out.println("File " + filePath + " added");
+                            } else {
+                                System.out.println("Error adding file: " + filePath);
+                            }
+                        }
+                    }
+                }
+				else if (bufferList.get(0).equals("DELETE")) {
+                    if (bufferList.size() < 2) {
+                        System.out.println("ERROR NULL FILENAME");
+                    } else {
+						//envia o comando do delete
+                        String filename = bufferList.get(1);
+                        out.writeUTF(buffer);
+                        buffer = in.readUTF();
+						//verifica se foi deletado
+                        if (buffer.replace(" ","").equals("SUCCESS")) {
+                            System.out.println("File " + filename + " deleted");
+                        } else {
+                            System.out.println("Error deleting file: " + filename);
+                        }
+                    }
+                }
+                else if (bufferList.get(0).equals("GETFILESLIST")) {
+					//envia o comando
+                    out.writeUTF(buffer);
+                    buffer = in.readUTF();
+                    System.out.println("=========================================");
+                    System.out.println("Lista de arquivos:");
+                    System.out.println(buffer);//mostra os arquivos recebidos
+                    System.out.println("=========================================");
+                }
+                else if (bufferList.get(0).equals("GETFILE")) {
+                    if (bufferList.size() < 2) {
+                        System.out.println("ERROR NULL FILENAME");
+                    } else {
+						//envia o comando
+                        String filePath = bufferList.get(1);
+                        out.writeUTF(buffer);
+                        buffer = in.readUTF();
+                        if (buffer.replace(" ","").equals("SUCCESS")) { //recebe se pode esperar o arquivo
+							
+							// cria e recebe o arquivo
+                            FileOutputStream fos = new FileOutputStream(filePath);
+                            byte[] fileBuffer = new byte[1024];
+                            int bytesRead;
+
+                            while ((bytesRead = in.read(fileBuffer)) != -1) {
+                                fos.write(fileBuffer, 0, bytesRead);
+								// Verifica se não há mais dados disponíveis no fluxo de entrada
+								if (in.available() == 0) {
+									break;
+								}
+                            }
+
+                            fos.close(); //fecha o fileoutput
+                            System.out.println("File " + filePath + " downloaded");
+                        } else {
+                            System.out.println("Error downloading file: " + filePath);
+                        }
+                    }
+                }
 				else if(buffer.equals("EXIT")){  //EXIT
 					out.writeUTF(buffer);
 					break;
